@@ -98,13 +98,28 @@ function handleRollDice() {
     let currentMessages = []; // Array to hold messages for this turn sequence
 
     if (gameState.isRerollPhase) { // This is a RE-ROLL action
+        console.log('Starting reroll phase');
+        console.log('Selected dice:', gameState.diceSelectedForReroll);
+        console.log('Current dice values:', gameState.diceValues);
+        
+        // Store the selected dice state before disabling selection
+        const selectedDice = [...gameState.diceSelectedForReroll];
+        
         gameState.isRerollPhase = false; // Exit re-roll phase
         gameState.rerollsAvailable = 0; // Consume the re-roll
         updateDisplay(); // Update re-roll count display
         disableDieSelection(); // Make dice no longer selectable
         rollButton.textContent = "Rolling..."; // Indicate action
 
-        let diceToAnimateCount = gameState.diceSelectedForReroll.filter(Boolean).length;
+        // Count selected dice using our stored selection state
+        let diceToAnimateCount = 0;
+        for (let i = 0; i < NUM_DICE; i++) {
+            if (selectedDice[i]) {
+                diceToAnimateCount++;
+            }
+        }
+        console.log('Dice to animate:', diceToAnimateCount);
+        
         let animatedDice = 0; // Counter for completed animations
 
         if (diceToAnimateCount === 0) { // Nothing selected for re-roll
@@ -114,8 +129,14 @@ function handleRollDice() {
         }
         currentMessages.push("Re-rolling selected dice...");
 
-        gameState.diceValues.forEach((currentFace, index) => {
-            if (gameState.diceSelectedForReroll[index]) {
+        // Create a copy of current dice values to modify during reroll
+        let newDiceValues = [...gameState.diceValues];
+        console.log('Initial new dice values:', newDiceValues);
+
+        // Process each die
+        for (let index = 0; index < NUM_DICE; index++) {
+            if (selectedDice[index]) { // Use stored selection state
+                console.log(`Rerolling die ${index + 1}`);
                 // This die is being re-rolled
                 dieElements[index].classList.add('rolling');
                 let rollCount = 0;
@@ -127,19 +148,28 @@ function handleRollDice() {
                     if (rollCount >= 5) { // Number of quick changes for animation
                         clearInterval(animationInterval);
                         const finalValue = rollSingleDie();
-                        gameState.diceValues[index] = DICE_FACES[finalValue]; // Update the die value in game state
-                        dieElements[index].textContent = gameState.diceValues[index].icon;
-                        dieElements[index].className = `die ${gameState.diceValues[index].colorClass}`; // Set final color
+                        newDiceValues[index] = DICE_FACES[finalValue]; // Update the new dice values array
+                        console.log(`Die ${index + 1} new value:`, newDiceValues[index]);
+                        dieElements[index].textContent = newDiceValues[index].icon;
+                        dieElements[index].className = `die ${newDiceValues[index].colorClass}`; // Set final color
                         dieElements[index].classList.remove('rolling');
                         
                         animatedDice++;
+                        console.log('Animated dice count:', animatedDice);
                         if (animatedDice === diceToAnimateCount) { // All selected dice re-rolled
+                            console.log('All dice rerolled, updating game state');
+                            console.log('Final new dice values:', newDiceValues);
+                            gameState.diceValues = newDiceValues; // Update the game state with new dice values
                             resolveDiceEffects(currentMessages);
                         }
                     }
                 }, 50); // Animation speed
+            } else {
+                // This die is not being re-rolled, keep its current value
+                console.log(`Keeping die ${index + 1} value:`, gameState.diceValues[index]);
+                newDiceValues[index] = gameState.diceValues[index];
             }
-        });
+        }
 
     } else { // This is the INITIAL ROLL of the round
         rollButton.textContent = "Rolling...";
