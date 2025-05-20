@@ -7,6 +7,10 @@ const NUM_DICE = 3;
 const OVERWHELMED_THRESHOLD = 15; // Zombies count above which they do bonus damage
 const OVERWHELMED_BONUS_DAMAGE = 5; // Bonus damage when overwhelmed
 
+// High Score Storage Keys
+const HIGHEST_ROUND_KEY = 'dicevzombz_highest_round';
+const EARLIEST_WIN_KEY = 'dicevzombz_earliest_win';
+
 // Dice Symbol Definitions
 const DICE_FACES = {
     1: { type: 'ZOMBIE_ADD', icon: '🧟', text: 'New Zombie!', colorClass: 'zombie-icon' },
@@ -26,7 +30,9 @@ let gameState = {
     diceValues: [null, null, null], // Stores face objects of current roll
     rerollsAvailable: 1, // Feature 1: Re-rolls per round
     isRerollPhase: false, // Feature 1: True if player can select dice for re-roll
-    diceSelectedForReroll: [false, false, false] // Feature 1
+    diceSelectedForReroll: [false, false, false], // Feature 1
+    highestRound: parseInt(localStorage.getItem(HIGHEST_ROUND_KEY) || '0'), // Highest round reached
+    earliestWin: parseInt(localStorage.getItem(EARLIEST_WIN_KEY) || '0') // Earliest round won (0 means no win yet)
 };
 
 /**
@@ -181,6 +187,21 @@ function checkWinLoss() {
         gameState.gameOver = true;
         rollButton.disabled = true;
         disableDieSelection(); // Ensure dice are not interactive post-game
+
+        // Update highest round reached
+        if (gameState.round > gameState.highestRound) {
+            gameState.highestRound = gameState.round;
+            localStorage.setItem(HIGHEST_ROUND_KEY, gameState.highestRound.toString());
+        }
+
+        // Update earliest win if this is a win
+        if (gameEndStatus.startsWith('win')) {
+            const currentRound = gameState.round;
+            if (gameState.earliestWin === 0 || currentRound < gameState.earliestWin) {
+                gameState.earliestWin = currentRound;
+                localStorage.setItem(EARLIEST_WIN_KEY, gameState.earliestWin.toString());
+            }
+        }
 
         switch(gameEndStatus) {
             case "loss_barricade":

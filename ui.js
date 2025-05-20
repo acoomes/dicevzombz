@@ -3,6 +3,8 @@ const roundDisplay = document.getElementById('round-display');
 const zombiesDisplay = document.getElementById('zombies-display');
 const barricadeDisplay = document.getElementById('barricade-display');
 const rerollDisplay = document.getElementById('reroll-display');
+const highestRoundDisplay = document.getElementById('highest-round-display');
+const earliestWinDisplay = document.getElementById('earliest-win-display');
 const dieElements = [
     document.getElementById('die1'),
     document.getElementById('die2'),
@@ -219,6 +221,8 @@ function updateDisplay() {
     zombiesDisplay.textContent = `Zombies: ${gameState.zombies}`;
     barricadeDisplay.textContent = `Barricade: ${gameState.barricadeStrength}`;
     rerollDisplay.textContent = `Re-rolls: ${gameState.rerollsAvailable}`;
+    highestRoundDisplay.textContent = `Furthest: ${gameState.highestRound}`;
+    earliestWinDisplay.textContent = gameState.earliestWin > 0 ? `Best Win: ${gameState.earliestWin}` : 'Best Win: -';
     
     // Update zombie art
     zombieArtArea.innerHTML = ''; // Clear previous zombies
