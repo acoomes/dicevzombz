@@ -1,4 +1,5 @@
 // DOM Elements
+const stageDisplay = document.getElementById('stage-display');
 const roundDisplay = document.getElementById('round-display');
 const zombiesDisplay = document.getElementById('zombies-display');
 const barricadeDisplay = document.getElementById('barricade-display');
@@ -22,26 +23,34 @@ const playAgainButton = document.getElementById('play-again-button');
  * Initializes or resets the game to its starting state.
  */
 function initGame() {
+    gameState.stage = 1;
+    startStage();
+}
+
+function startStage() {
     gameState.barricadeStrength = INITIAL_BARRICADE_STRENGTH;
-    gameState.zombies = INITIAL_ZOMBIES;
+    gameState.zombies = INITIAL_ZOMBIES + STAGE_ZOMBIE_INCREMENT * (gameState.stage - 1);
     gameState.round = 1;
     gameState.gameOver = false;
     gameState.diceValues = [null, null, null];
     gameState.rerollsAvailable = 1;
     gameState.isRerollPhase = false;
     gameState.diceSelectedForReroll = [false, false, false];
-    
+    gameState.stageOutcome = null;
+
     updateDisplay();
-    messageArea.textContent = "The night begins... Roll the dice to survive!";
+    const startMsg = gameState.stage === 1
+        ? "The night begins... Roll the dice to survive!"
+        : `Stage ${gameState.stage} begins... Roll the dice to survive!`;
+    messageArea.textContent = startMsg;
     rollButton.textContent = "Roll Dice!";
     rollButton.disabled = false;
     gameOverModal.classList.remove('active');
-    
+
     dieElements.forEach((die, index) => {
         die.textContent = '🎲';
-        die.className = 'die'; // Reset classes
-        // Remove any existing click listeners for safety. They are added in enableDieSelection.
-        die.removeEventListener('click', onDieSelectClickHandler); 
+        die.className = 'die';
+        die.removeEventListener('click', onDieSelectClickHandler);
     });
 }
 
@@ -217,6 +226,7 @@ function handleRollDice() {
  * Updates all display elements on the page with current game state.
  */
 function updateDisplay() {
+    stageDisplay.textContent = `Stage: ${gameState.stage}`;
     roundDisplay.textContent = `Round: ${gameState.round}/${MAX_ROUNDS}`;
     zombiesDisplay.textContent = `Zombies: ${gameState.zombies}`;
     barricadeDisplay.textContent = `Barricade: ${gameState.barricadeStrength}`;
@@ -240,9 +250,16 @@ function updateDisplay() {
     }
 }
 
+function handlePlayAgain() {
+    if (gameState.stageOutcome === 'won') {
+        gameState.stage++;
+    }
+    startStage();
+}
+
 // --- Event Listeners ---
 rollButton.addEventListener('click', handleRollDice);
-playAgainButton.addEventListener('click', initGame);
+playAgainButton.addEventListener('click', handlePlayAgain);
 
 // --- Initial Game Setup ---
 window.onload = function() {

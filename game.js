@@ -4,6 +4,7 @@ const MAX_BARRICADE_STRENGTH = 30; // Max barricade can be repaired to
 const INITIAL_ZOMBIES = 10;
 const MAX_ROUNDS = 10;
 const NUM_DICE = 3;
+const STAGE_ZOMBIE_INCREMENT = 5;
 const OVERWHELMED_THRESHOLD = 15; // Zombies count above which they do bonus damage
 const OVERWHELMED_BONUS_DAMAGE = 5; // Bonus damage when overwhelmed
 
@@ -26,6 +27,8 @@ let gameState = {
     barricadeStrength: INITIAL_BARRICADE_STRENGTH,
     zombies: INITIAL_ZOMBIES,
     round: 1,
+    stage: 1,
+    stageOutcome: null,
     gameOver: false,
     diceValues: [null, null, null], // Stores face objects of current roll
     rerollsAvailable: 1, // Feature 1: Re-rolls per round
@@ -174,6 +177,8 @@ function zombiesAttack(currentMessages) {
 function checkWinLoss() {
     let gameEndStatus = null; // To store the type of game end
 
+    const totalRound = (gameState.stage - 1) * MAX_ROUNDS + gameState.round;
+
     if (gameState.barricadeStrength <= 0) {
         gameEndStatus = "loss_barricade";
     } else if (gameState.zombies <= 0 && gameState.round <= MAX_ROUNDS) { // Win by eliminating all zombies
@@ -185,38 +190,38 @@ function checkWinLoss() {
 
     if (gameEndStatus && !gameState.gameOver) { // Process game end only once
         gameState.gameOver = true;
+        gameState.stageOutcome = gameEndStatus.startsWith('loss') ? 'lost' : 'won';
         rollButton.disabled = true;
         disableDieSelection(); // Ensure dice are not interactive post-game
 
-        // Update highest round reached
-        if (gameState.round > gameState.highestRound) {
-            gameState.highestRound = gameState.round;
+        // Update highest round reached (across stages)
+        if (totalRound > gameState.highestRound) {
+            gameState.highestRound = totalRound;
             localStorage.setItem(HIGHEST_ROUND_KEY, gameState.highestRound.toString());
         }
 
         // Update earliest win if this is a win
         if (gameEndStatus.startsWith('win')) {
-            const currentRound = gameState.round;
-            if (gameState.earliestWin === 0 || currentRound < gameState.earliestWin) {
-                gameState.earliestWin = currentRound;
+            if (gameState.earliestWin === 0 || totalRound < gameState.earliestWin) {
+                gameState.earliestWin = totalRound;
                 localStorage.setItem(EARLIEST_WIN_KEY, gameState.earliestWin.toString());
             }
         }
 
         switch(gameEndStatus) {
             case "loss_barricade":
-                modalTitle.textContent = "Game Over!";
-                modalMessage.textContent = "The zombies have breached the barricade! 💀";
-                messageArea.innerHTML += "<br><b>GAME OVER! The horde broke through!</b>";
+                modalTitle.textContent = "Stage Failed";
+                modalMessage.textContent = "The zombies breached your barricade! Try again.";
+                messageArea.innerHTML += "<br><b>STAGE FAILED! The horde broke through!</b>";
                 break;
             case "win_no_zombies":
-                modalTitle.textContent = "You Won!";
-                modalMessage.textContent = "You've defeated all the zombies! 🎉";
+                modalTitle.textContent = "Stage Cleared";
+                modalMessage.textContent = `Stage ${gameState.stage} cleared! All zombies defeated! 🎉`;
                 messageArea.innerHTML += "<br><b>VICTORY! All zombies eliminated!</b>";
                 break;
             case "win_survived_rounds":
-                 modalTitle.textContent = "You Survived!";
-                 modalMessage.textContent = `You made it through ${MAX_ROUNDS} rounds! The dawn is here! 🌅`;
+                 modalTitle.textContent = "Stage Survived";
+                 modalMessage.textContent = `Stage ${gameState.stage} complete! You lasted ${MAX_ROUNDS} rounds! 🌅`;
                  messageArea.innerHTML += `<br><b>SURVIVED! You lasted ${MAX_ROUNDS} rounds!</b>`;
                  break;
         }
