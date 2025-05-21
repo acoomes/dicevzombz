@@ -11,6 +11,7 @@ const dieElements = [
     document.getElementById('die3')
 ];
 const rollButton = document.getElementById('roll-button');
+const keepButton = document.getElementById('keep-button');
 const messageArea = document.getElementById('message-area');
 const zombieArtArea = document.getElementById('zombie-art-area');
 const gameOverModal = document.getElementById('game-over-modal');
@@ -35,6 +36,7 @@ function initGame() {
     messageArea.textContent = "The night begins... Roll the dice to survive!";
     rollButton.textContent = "Roll Dice!";
     rollButton.disabled = false;
+    keepButton.classList.add('hidden');
     gameOverModal.classList.remove('active');
     
     dieElements.forEach((die, index) => {
@@ -111,6 +113,7 @@ function handleRollDice() {
         gameState.rerollsAvailable = 0; // Consume the re-roll
         updateDisplay(); // Update re-roll count display
         disableDieSelection(); // Make dice no longer selectable
+        keepButton.classList.add('hidden');
         rollButton.textContent = "Rolling..."; // Indicate action
 
         // Count selected dice using our stored selection state
@@ -199,8 +202,9 @@ function handleRollDice() {
                             gameState.isRerollPhase = true;
                             rollButton.textContent = "Re-roll Selected";
                             rollButton.disabled = false; // Enable button for re-roll confirmation
+                            keepButton.classList.remove('hidden');
                             enableDieSelection(); // Allow player to click dice
-                            currentMessages.push("Initial roll complete. Select dice to re-roll, then click 'Re-roll Selected'.");
+                            currentMessages.push("Initial roll complete. Select dice to re-roll, then click 'Re-roll Selected', or click 'Keep Results' to continue.");
                             messageArea.innerHTML = currentMessages.join('<br>');
                         } else {
                             // No re-rolls available, proceed to resolve effects
@@ -210,7 +214,23 @@ function handleRollDice() {
                 }
             }, 50);
         });
+
     }
+}
+
+/**
+ * Handles keeping the initial roll without using the re-roll.
+ */
+function handleKeepResults() {
+    if (!gameState.isRerollPhase || gameState.gameOver) return;
+
+    disableDieSelection();
+    keepButton.classList.add('hidden');
+    rollButton.disabled = true;
+    rollButton.textContent = "Resolving...";
+
+    const messages = ["Keeping current results."];
+    resolveDiceEffects(messages);
 }
 
 /**
@@ -242,6 +262,7 @@ function updateDisplay() {
 
 // --- Event Listeners ---
 rollButton.addEventListener('click', handleRollDice);
+keepButton.addEventListener('click', handleKeepResults);
 playAgainButton.addEventListener('click', initGame);
 
 // --- Initial Game Setup ---

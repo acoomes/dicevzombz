@@ -112,6 +112,10 @@ body {
     cursor: not-allowed;
 }
 
+.hidden {
+    display: none;
+}
+
 .message-area {
     margin-top: 1.5rem;
     min-height: 70px; /* Increased height for more messages */
