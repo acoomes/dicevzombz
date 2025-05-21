@@ -43,6 +43,9 @@ function initGame() {
         // Remove any existing click listeners for safety. They are added in enableDieSelection.
         die.removeEventListener('click', onDieSelectClickHandler); 
     });
+
+    // Reset modal button text to default on new game
+    playAgainButton.textContent = "Continue";
 }
 
 /**
@@ -247,4 +250,4 @@ playAgainButton.addEventListener('click', initGame);
 // --- Initial Game Setup ---
 window.onload = function() {
     initGame();
-}; 
+};
