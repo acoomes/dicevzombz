@@ -207,23 +207,20 @@ function checkWinLoss() {
             case "loss_barricade":
                 modalTitle.textContent = "Game Over!";
                 modalMessage.textContent = "The zombies have breached the barricade! 💀";
-                playAgainButton.textContent = "Try Again";
                 messageArea.innerHTML += "<br><b>GAME OVER! The horde broke through!</b>";
                 break;
             case "win_no_zombies":
                 modalTitle.textContent = "You Won!";
                 modalMessage.textContent = "You've defeated all the zombies! 🎉";
-                playAgainButton.textContent = "Next Stage";
                 messageArea.innerHTML += "<br><b>VICTORY! All zombies eliminated!</b>";
                 break;
             case "win_survived_rounds":
                  modalTitle.textContent = "You Survived!";
                  modalMessage.textContent = `You made it through ${MAX_ROUNDS} rounds! The dawn is here! 🌅`;
-                 playAgainButton.textContent = "Next Stage";
                  messageArea.innerHTML += `<br><b>SURVIVED! You lasted ${MAX_ROUNDS} rounds!</b>`;
                  break;
         }
         gameOverModal.classList.add('active'); // Show the game over modal
     }
     updateDisplay(); // Final update for stats like round number if game ended by max rounds
-}
+} 
