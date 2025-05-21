@@ -1,12 +1,35 @@
 // Game Configuration
 const INITIAL_BARRICADE_STRENGTH = 20;
 const MAX_BARRICADE_STRENGTH = 30; // Max barricade can be repaired to
-const INITIAL_ZOMBIES = 10;
+const INITIAL_ZOMBIES = 3; // Lower starting difficulty
 const MAX_ROUNDS = 10;
 const NUM_DICE = 3;
-const STAGE_ZOMBIE_INCREMENT = 5;
+// Calculate the additional zombies added when starting a specific stage.
+// The increment slowly grows, following a ramp where the value n is used for
+// n stages before increasing. Example: +1 (1 stage), +2 (2 stages), +3 (3
+// stages), and so on.
+function getStageZombieIncrement(stage) {
+    if (stage <= 1) return 0;
+    let increment = 1;
+    let stagesRemaining = stage - 1;
+    while (stagesRemaining > increment) {
+        stagesRemaining -= increment;
+        increment++;
+    }
+    return increment;
+}
 const OVERWHELMED_THRESHOLD = 15; // Zombies count above which they do bonus damage
 const OVERWHELMED_BONUS_DAMAGE = 5; // Bonus damage when overwhelmed
+
+// Calculate the number of zombies that start a given stage using the ramp
+// increment formula defined in getStageZombieIncrement().
+function getInitialZombiesForStage(stage) {
+    let zombies = INITIAL_ZOMBIES;
+    for (let i = 2; i <= stage; i++) {
+        zombies += getStageZombieIncrement(i);
+    }
+    return zombies;
+}
 
 // High Score Storage Keys
 const HIGHEST_ROUND_KEY = 'dicevzombz_highest_round';

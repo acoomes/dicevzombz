@@ -29,7 +29,7 @@ function initGame() {
 
 function startStage() {
     gameState.barricadeStrength = INITIAL_BARRICADE_STRENGTH;
-    gameState.zombies = INITIAL_ZOMBIES + STAGE_ZOMBIE_INCREMENT * (gameState.stage - 1);
+    gameState.zombies = getInitialZombiesForStage(gameState.stage);
     gameState.round = 1;
     gameState.gameOver = false;
     gameState.diceValues = [null, null, null];
